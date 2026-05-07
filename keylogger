@@ -1,0 +1,59 @@
+
+import tkinter as tk
+from datetime import datetime
+
+LOG_FILE = "app_key_log.txt"
+
+def log_event(event_type, key):
+    timestamp = datetime.utcnow().isoformat()
+    entry = f"{timestamp} | {event_type} | {key}\n"
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(entry)
+
+def on_key_press(event):
+    key_name = event.keysym
+    char = event.char if event.char and event.char.isprintable() else ""
+    log_event("KEY_PRESS", f"{key_name}{' (' + char + ')' if char else ''}")
+
+def on_key_release(event):
+    key_name = event.keysym
+    log_event("KEY_RELEASE", key_name)
+
+def on_focus_in(event):
+    log_event("FOCUS", "window_focused")
+
+def on_focus_out(event):
+    log_event("FOCUS", "window_unfocused")
+
+def build_ui(root):
+    root.title("In-App Key Logger (Consent Required)")
+    root.geometry("600x200")
+
+    notice = tk.Label(
+        root,
+        text="This application logs keys while this window is focused. Do not type sensitive data here.",
+        wraplength=560,
+        fg="white",
+        bg="darkred",
+        padx=10,
+        pady=10
+    )
+    notice.pack(fill="x", pady=(10, 20))
+
+    info = tk.Label(root, text="Click here and type. Key events will be logged to app_key_log.txt.")
+    info.pack()
+
+    text = tk.Text(root, height=6, width=70)
+    text.pack(padx=10, pady=10)
+    text.focus_set()
+
+    text.bind("<KeyPress>", on_key_press)
+    text.bind("<KeyRelease>", on_key_release)
+
+    root.bind("<FocusIn>", on_focus_in)
+    root.bind("<FocusOut>", on_focus_out)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    build_ui(root)
+    root.mainloop()
